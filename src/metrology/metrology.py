@@ -9,14 +9,21 @@ class MeasurementData:
         self.unit = unit
 
     def __str__(self) -> str:
-        return "{} +\- {}".format(str(self.value), str(self.error))
+        return "{} ± {}".format(str(self.value), str(self.error))
 
     def relative_error(self) -> float:
         return self.error / self.value
 
-
 class MeasurementRelationship:
     def __init__(self, unit:str, equation_fn:typing.Callable[[typing.List[float]], float], derivatives:typing.List[typing.Callable[[typing.List[float]], float]]) -> None:
+        self.equation_ = equation_fn
+        self.derivatives_ = derivatives
+        self.unit = unit
+
+    def calculate(self, measurements:typing.List[MeasurementData]) -> MeasurementData:
+        def most_significant_digit(x:float) -> float:
+            return round(x, -int(math.floor(math.log10(abs(x)))))
+
         def error_propagation(values:typing.List[float], errors:typing.List[float], derivatives:typing.List[typing.Callable[[typing.List[float]], float]]) -> float:
             if len(errors) != len(values) or len(errors) != len(derivatives):
                 raise ValueError("Length of lists values, errors and derivatives are not equal")
@@ -29,12 +36,6 @@ class MeasurementRelationship:
             error_propagated = math.sqrt(error_propagated)
             return error_propagated
 
-        self.equation_ = equation_fn
-        self.derivatives_ = derivatives
-        self.error_propation_ = error_propagation
-        self.unit = unit
-
-    def calculate(self, measurements:typing.List[MeasurementData]) -> MeasurementData:
         if len(measurements) != len(self.derivatives_):
             raise ValueError("Invalid number of input measurements")
 
@@ -44,8 +45,9 @@ class MeasurementRelationship:
             values.append(measurement.value)
             errors.append(measurement.error)
 
-        value = self.equation_(values)
-        error = self.error_propation_(values, errors, self.derivatives_)
+        error = most_significant_digit(error_propagation(values, errors, self.derivatives_))
+        significant_digit = abs(math.floor(math.log10(error)))
+        value = round(self.equation_(values), significant_digit)
         return MeasurementData(value, error, self.unit)
 
 
@@ -74,3 +76,20 @@ def convert_str_to_measurement(measurement_as_str:str, unit:str = "") -> Measure
         raise ValueError("Given str could not be splitted correctly")
     
     return MeasurementData(float(info[0]), float(info[1]), unit)
+
+def write_measurements_as_csv(measurements:typing.Dict[str, typing.List[MeasurementData]], csv_separator:str) -> typing.List[str]:
+    csv_data = []
+
+    headers = []
+    for key in measurements.keys():
+        headers.append("\"{}\"".format(key))
+    csv_data.append(";".join(headers))
+
+    n_rows = len(list(measurements.values())[0])
+    for row_index in range(n_rows):
+        row = []
+        for key in measurements.keys():
+            row.append("\"{}\"".format(measurements[key][row_index].__str__()))
+        csv_data.append(";".join(row))
+
+    return csv_data
