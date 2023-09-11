@@ -1,4 +1,3 @@
-
 import utils.data_parser as parser
 import metrology.metrology as metrology
 
@@ -7,11 +6,12 @@ EXPERIMENT_AUXDATA_FILEPATH = "data/dados_atividade_1_largura_do_canal.csv"
 
 OUTPUT_FILEPATH = "data/resultados_atividade_1.csv"
 
+
 # Retorna velocidade do escoamento
 # Args
-def eq_velocidade_escoamento(variaveis:list) -> float:
+def eq_velocidade_escoamento(variaveis: list) -> float:
     """Calcula a velocidade de escoamento
-    
+
     :param m: Nmr de rotacoes do molinete por tempo (adimensional)
     :return velocidade do escoamento (m/s)
     """
@@ -20,8 +20,9 @@ def eq_velocidade_escoamento(variaveis:list) -> float:
         return 0.0562 * m + 0.038
     else:
         return 0.0545 * m + 0.049
-    
-def der_velocidade_escoamento_m(variaveis:list) -> float:
+
+
+def der_velocidade_escoamento_m(variaveis: list) -> float:
     m = variaveis[0]
     if m < 6.47:
         return 0.0562
@@ -29,31 +30,40 @@ def der_velocidade_escoamento_m(variaveis:list) -> float:
         return 0.0545
 
 
-def eq_velocidade_rotacoes_molinete(variaves:list) -> float:
+def eq_velocidade_rotacoes_molinete(variaves: list) -> float:
     nmr_rotacoes = variaves[0]
     tempo = variaves[1]
     return nmr_rotacoes / tempo
 
-def der_velocidade_rotacoes_molinete_nmr(variaves:list) -> float:
+
+def der_velocidade_rotacoes_molinete_nmr(variaves: list) -> float:
     #  nmr_rotacoes = variaves[0]
     tempo = variaves[1]
     return 1 / tempo
 
-def der_velocidade_rotacoes_molinete_tempo(variaves:list) -> float:
+
+def der_velocidade_rotacoes_molinete_tempo(variaves: list) -> float:
     nmr_rotacoes = variaves[0]
     tempo = variaves[1]
     return -nmr_rotacoes / tempo**2
 
 
-def prepare_measurements(measurements:dict, key:str, unit:str) -> None:
+def prepare_measurements(measurements: dict, key: str, unit: str) -> None:
     if key not in measurements:
         return
-    
-    for index in range(0,len(measurements[key])):
-            measurements[key][index] = metrology.convert_str_to_measurement(measurements[key][index], unit)
-        
 
-def calculate_variable(variable_name:str, measurement_names:list, measurements:dict, calculator:metrology.MeasurementRelationship) -> None:
+    for index in range(0, len(measurements[key])):
+        measurements[key][index] = metrology.convert_str_to_measurement(
+            measurements[key][index], unit
+        )
+
+
+def calculate_variable(
+    variable_name: str,
+    measurement_names: list,
+    measurements: dict,
+    calculator: metrology.MeasurementRelationship,
+) -> None:
     measurements[variable_name] = []
     for i in range(0, len(measurements[measurement_names[0]])):
         list_input_measurement = []
@@ -77,15 +87,34 @@ def main():
     prepare_measurements(measurements, "TEMPO (S)", "s")
 
     # Item a)
-    vel_rot_molinete_calculator = metrology.MeasurementRelationship("rps", eq_velocidade_rotacoes_molinete, [der_velocidade_rotacoes_molinete_nmr, der_velocidade_rotacoes_molinete_tempo])
-    calculate_variable("VELOCIDADE ROTAÇÕES MOLINETE (RPS)", ["NR. ROTAÇÕES MOLINETE", "TEMPO (S)"], measurements, vel_rot_molinete_calculator)
+    vel_rot_molinete_calculator = metrology.MeasurementRelationship(
+        "rps",
+        eq_velocidade_rotacoes_molinete,
+        [der_velocidade_rotacoes_molinete_nmr, der_velocidade_rotacoes_molinete_tempo],
+    )
+    calculate_variable(
+        "VELOCIDADE ROTAÇÕES MOLINETE (RPS)",
+        ["NR. ROTAÇÕES MOLINETE", "TEMPO (S)"],
+        measurements,
+        vel_rot_molinete_calculator,
+    )
 
     # Item b)
-    vel_escoamento_calculator = metrology.MeasurementRelationship("m/s", eq_velocidade_escoamento, [der_velocidade_escoamento_m])
-    calculate_variable("VELOCIDADE ESCOAMENTO (m/s)", ["VELOCIDADE ROTAÇÕES MOLINETE (RPS)"], measurements, vel_escoamento_calculator)
+    vel_escoamento_calculator = metrology.MeasurementRelationship(
+        "m/s", eq_velocidade_escoamento, [der_velocidade_escoamento_m]
+    )
+    calculate_variable(
+        "VELOCIDADE ESCOAMENTO (m/s)",
+        ["VELOCIDADE ROTAÇÕES MOLINETE (RPS)"],
+        measurements,
+        vel_escoamento_calculator,
+    )
 
     # Save everything in a csv
-    parser.write_data(OUTPUT_FILEPATH, metrology.write_measurements_as_csv(measurements, ";"))
+    parser.write_data(
+        OUTPUT_FILEPATH, metrology.write_measurements_as_csv(measurements, ";")
+    )
+
 
 if __name__ == "__main__":
     main()

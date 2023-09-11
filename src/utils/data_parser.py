@@ -1,16 +1,19 @@
 import csv
 import typing
 
+
 def parse_data(filepath: str) -> typing.List[str]:
     rows = []
-    with open(filepath, newline='') as csvfile:
-        data = csv.reader(csvfile, delimiter=";", quotechar='|')
+    with open(filepath, newline="") as csvfile:
+        data = csv.reader(csvfile, delimiter=";", quotechar="|")
         for row in data:
             rows.append(row)
     return rows
-        
 
-def convert_csv_to_measurements_as_str(rows: typing.List[str]) -> typing.Dict[str, typing.List[str]]:
+
+def convert_csv_to_measurements_as_str(
+    rows: typing.List[str],
+) -> typing.Dict[str, typing.List[str]]:
     header = rows[0]
 
     measurements_as_str = {}
@@ -27,8 +30,8 @@ def convert_csv_to_measurements_as_str(rows: typing.List[str]) -> typing.Dict[st
     return measurements_as_str
 
 
-def write_data(filepath:str, lines:typing.List[str]) -> bool:
-    with open(filepath, 'w', newline='') as csvfile:
+def write_data(filepath: str, lines: typing.List[str]) -> bool:
+    with open(filepath, "w", newline="") as csvfile:
         for line in lines:
             csvfile.write(line)
             csvfile.write("\n")
