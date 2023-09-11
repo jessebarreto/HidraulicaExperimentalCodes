@@ -26,3 +26,10 @@ def convert_csv_to_measurements_as_str(rows: typing.List[str]) -> typing.Dict[st
 
     return measurements_as_str
 
+
+def write_data(filepath:str, lines:typing.List[str]) -> bool:
+    with open(filepath, 'w', newline='') as csvfile:
+        for line in lines:
+            csvfile.write(line)
+            csvfile.write("\n")
+    return True
