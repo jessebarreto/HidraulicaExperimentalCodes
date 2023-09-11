@@ -2,7 +2,7 @@
 
 Repositório com um compilado de códigos, dados, e etc, para realizar experimentos da disciplina de hidraulica experimental.
 
-## Running env
+## Running python virtual env
 
 Since we have a venv in this repo.
 To enable it, we should:
