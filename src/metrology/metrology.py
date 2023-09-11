@@ -9,7 +9,7 @@ class MeasurementData:
         self.unit = unit
 
     def __str__(self) -> str:
-        return "MeasurementData {}".format(str(self.__dict__))
+        return "{} +\- {}".format(str(self.value), str(self.error))
 
     def relative_error(self) -> float:
         return self.error / self.value
